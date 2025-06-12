@@ -1,4 +1,4 @@
-import { TimelineV2, parseTimelineTweetsV2 } from './timeline-v2';
+import { TimelineV2, parseTimelineTweetsV2 } from './timeline-v2'
 
 test('parseTimelineTweetsV2 handles pinned tweets correctly', async () => {
   const data: TimelineV2 = {
@@ -85,13 +85,13 @@ test('parseTimelineTweetsV2 handles pinned tweets correctly', async () => {
         },
       },
     },
-  };
+  }
 
-  const result = parseTimelineTweetsV2(data);
-  expect(result.tweets.length).toBe(1);
-  expect(result.tweets[0].id).toBe('1');
-  expect(result.tweets[0].isPin).toBe(true);
-  expect(result.previous).toBe('A');
-  expect(result.next).toBe('B');
-  expect(result.tweets[0].text).toBe('test');
-});
+  const result = parseTimelineTweetsV2(data)
+  expect(result.tweets.length).toBe(1)
+  expect(result.tweets[0].id).toBe('1')
+  expect(result.tweets[0].isPin).toBe(true)
+  expect(result.previous).toBe('A')
+  expect(result.next).toBe('B')
+  expect(result.tweets[0].text).toBe('test')
+})

@@ -1,23 +1,23 @@
-import { Cookie } from 'tough-cookie';
-import { bearerToken, FetchTransformOptions, RequestApiResult } from './api';
-import { TwitterAuth, TwitterAuthOptions, TwitterGuestAuth } from './auth';
-import { FlowSubtaskHandler, TwitterUserAuth } from './auth-user';
-import { getProfile, getUserIdByScreenName, Profile } from './profile';
+import { Cookie } from 'tough-cookie'
+import { bearerToken, FetchTransformOptions, RequestApiResult } from './api'
+import { TwitterAuth, TwitterAuthOptions, TwitterGuestAuth } from './auth'
+import { FlowSubtaskHandler, TwitterUserAuth } from './auth-user'
+import { getProfile, getUserIdByScreenName, Profile } from './profile'
 import {
   fetchSearchProfiles,
   fetchSearchTweets,
   SearchMode,
   searchProfiles,
   searchTweets,
-} from './search';
+} from './search'
 import {
   fetchProfileFollowing,
   fetchProfileFollowers,
   getFollowing,
   getFollowers,
-} from './relationships';
-import { QueryProfilesResponse, QueryTweetsResponse } from './timeline-v1';
-import { getTrends } from './trends';
+} from './relationships'
+import { QueryProfilesResponse, QueryTweetsResponse } from './timeline-v1'
+import { getTrends } from './trends'
 import {
   Tweet,
   getTweetAnonymous,
@@ -33,29 +33,29 @@ import {
   getTweetsAndRepliesByUserId,
   getTweetsAndReplies,
   fetchLikedTweets,
-} from './tweets';
-import fetch from 'cross-fetch';
-import { RateLimitStrategy } from './rate-limit';
+} from './tweets'
+import fetch from 'cross-fetch'
+import { RateLimitStrategy } from './rate-limit'
 
-const twUrl = 'https://x.com';
+const twUrl = 'https://x.com'
 
 export interface ScraperOptions {
   /**
    * An alternative fetch function to use instead of the default fetch function. This may be useful
    * in nonstandard runtime environments, such as edge workers.
    */
-  fetch: typeof fetch;
+  fetch: typeof fetch
 
   /**
    * Additional options that control how requests and responses are processed. This can be used to
    * proxy requests through other hosts, for example.
    */
-  transform: Partial<FetchTransformOptions>;
+  transform: Partial<FetchTransformOptions>
 
   /**
    * A handling strategy for rate limits (HTTP 429).
    */
-  rateLimitStrategy: RateLimitStrategy;
+  rateLimitStrategy: RateLimitStrategy
 }
 
 /**
@@ -63,9 +63,9 @@ export interface ScraperOptions {
  * - Reusing Scraper objects is recommended to minimize the time spent authenticating unnecessarily.
  */
 export class Scraper {
-  private auth!: TwitterAuth;
-  private authTrends!: TwitterAuth;
-  private token: string;
+  private auth!: TwitterAuth
+  private authTrends!: TwitterAuth
+  private token: string
 
   /**
    * Creates a new Scraper object.
@@ -73,8 +73,8 @@ export class Scraper {
    * - Reusing Scraper objects is recommended to minimize the time spent authenticating unnecessarily.
    */
   constructor(private readonly options?: Partial<ScraperOptions>) {
-    this.token = bearerToken;
-    this.useGuestAuth();
+    this.token = bearerToken
+    this.useGuestAuth()
   }
 
   /**
@@ -88,11 +88,11 @@ export class Scraper {
     subtaskHandler: FlowSubtaskHandler,
   ): void {
     if (this.auth instanceof TwitterUserAuth) {
-      this.auth.registerSubtaskHandler(subtaskId, subtaskHandler);
+      this.auth.registerSubtaskHandler(subtaskId, subtaskHandler)
     }
 
     if (this.authTrends instanceof TwitterUserAuth) {
-      this.authTrends.registerSubtaskHandler(subtaskId, subtaskHandler);
+      this.authTrends.registerSubtaskHandler(subtaskId, subtaskHandler)
     }
   }
 
@@ -102,8 +102,8 @@ export class Scraper {
    * @internal
    */
   private useGuestAuth() {
-    this.auth = new TwitterGuestAuth(this.token, this.getAuthOptions());
-    this.authTrends = new TwitterGuestAuth(this.token, this.getAuthOptions());
+    this.auth = new TwitterGuestAuth(this.token, this.getAuthOptions())
+    this.authTrends = new TwitterGuestAuth(this.token, this.getAuthOptions())
   }
 
   /**
@@ -112,8 +112,8 @@ export class Scraper {
    * @returns The requested {@link Profile}.
    */
   public async getProfile(username: string): Promise<Profile> {
-    const res = await getProfile(username, this.auth);
-    return this.handleResponse(res);
+    const res = await getProfile(username, this.auth)
+    return this.handleResponse(res)
   }
 
   /**
@@ -122,8 +122,8 @@ export class Scraper {
    * @returns The ID of the corresponding account.
    */
   public async getUserIdByScreenName(screenName: string): Promise<string> {
-    const res = await getUserIdByScreenName(screenName, this.auth);
-    return this.handleResponse(res);
+    const res = await getUserIdByScreenName(screenName, this.auth)
+    return this.handleResponse(res)
   }
 
   /**
@@ -139,7 +139,7 @@ export class Scraper {
     maxTweets: number,
     searchMode: SearchMode = SearchMode.Top,
   ): AsyncGenerator<Tweet, void> {
-    return searchTweets(query, maxTweets, searchMode, this.auth);
+    return searchTweets(query, maxTweets, searchMode, this.auth)
   }
 
   /**
@@ -152,7 +152,7 @@ export class Scraper {
     query: string,
     maxProfiles: number,
   ): AsyncGenerator<Profile, void> {
-    return searchProfiles(query, maxProfiles, this.auth);
+    return searchProfiles(query, maxProfiles, this.auth)
   }
 
   /**
@@ -170,7 +170,7 @@ export class Scraper {
     searchMode: SearchMode,
     cursor?: string,
   ): Promise<QueryTweetsResponse> {
-    return fetchSearchTweets(query, maxTweets, searchMode, this.auth, cursor);
+    return fetchSearchTweets(query, maxTweets, searchMode, this.auth, cursor)
   }
 
   /**
@@ -185,7 +185,7 @@ export class Scraper {
     maxProfiles: number,
     cursor?: string,
   ): Promise<QueryProfilesResponse> {
-    return fetchSearchProfiles(query, maxProfiles, this.auth, cursor);
+    return fetchSearchProfiles(query, maxProfiles, this.auth, cursor)
   }
 
   /**
@@ -200,7 +200,7 @@ export class Scraper {
     maxTweets: number,
     cursor?: string,
   ): Promise<QueryTweetsResponse> {
-    return fetchListTweets(listId, maxTweets, cursor, this.auth);
+    return fetchListTweets(listId, maxTweets, cursor, this.auth)
   }
 
   /**
@@ -215,7 +215,7 @@ export class Scraper {
     maxTweets: number,
     cursor?: string,
   ): Promise<QueryTweetsResponse> {
-    return fetchLikedTweets(userId, maxTweets, cursor, this.auth);
+    return fetchLikedTweets(userId, maxTweets, cursor, this.auth)
   }
 
   /**
@@ -228,7 +228,7 @@ export class Scraper {
     userId: string,
     maxProfiles: number,
   ): AsyncGenerator<Profile, void> {
-    return getFollowing(userId, maxProfiles, this.auth);
+    return getFollowing(userId, maxProfiles, this.auth)
   }
 
   /**
@@ -241,7 +241,7 @@ export class Scraper {
     userId: string,
     maxProfiles: number,
   ): AsyncGenerator<Profile, void> {
-    return getFollowers(userId, maxProfiles, this.auth);
+    return getFollowers(userId, maxProfiles, this.auth)
   }
 
   /**
@@ -256,7 +256,7 @@ export class Scraper {
     maxProfiles: number,
     cursor?: string,
   ): Promise<QueryProfilesResponse> {
-    return fetchProfileFollowing(userId, maxProfiles, this.auth, cursor);
+    return fetchProfileFollowing(userId, maxProfiles, this.auth, cursor)
   }
 
   /**
@@ -271,7 +271,7 @@ export class Scraper {
     maxProfiles: number,
     cursor?: string,
   ): Promise<QueryProfilesResponse> {
-    return fetchProfileFollowers(userId, maxProfiles, this.auth, cursor);
+    return fetchProfileFollowers(userId, maxProfiles, this.auth, cursor)
   }
 
   /**
@@ -279,7 +279,7 @@ export class Scraper {
    * @returns The current list of trends.
    */
   public getTrends(): Promise<string[]> {
-    return getTrends(this.authTrends);
+    return getTrends(this.authTrends)
   }
 
   /**
@@ -289,7 +289,7 @@ export class Scraper {
    * @returns An {@link AsyncGenerator} of tweets from the provided user.
    */
   public getTweets(user: string, maxTweets = 200): AsyncGenerator<Tweet> {
-    return getTweets(user, maxTweets, this.auth);
+    return getTweets(user, maxTweets, this.auth)
   }
 
   /**
@@ -299,7 +299,7 @@ export class Scraper {
    * @returns An {@link AsyncGenerator} of liked tweets from the provided user.
    */
   public getLikedTweets(user: string, maxTweets = 200): AsyncGenerator<Tweet> {
-    return getLikedTweets(user, maxTweets, this.auth);
+    return getLikedTweets(user, maxTweets, this.auth)
   }
 
   /**
@@ -312,7 +312,7 @@ export class Scraper {
     userId: string,
     maxTweets = 200,
   ): AsyncGenerator<Tweet, void> {
-    return getTweetsByUserId(userId, maxTweets, this.auth);
+    return getTweetsByUserId(userId, maxTweets, this.auth)
   }
 
   /**
@@ -325,7 +325,7 @@ export class Scraper {
     user: string,
     maxTweets = 200,
   ): AsyncGenerator<Tweet> {
-    return getTweetsAndReplies(user, maxTweets, this.auth);
+    return getTweetsAndReplies(user, maxTweets, this.auth)
   }
 
   /**
@@ -338,7 +338,7 @@ export class Scraper {
     userId: string,
     maxTweets = 200,
   ): AsyncGenerator<Tweet, void> {
-    return getTweetsAndRepliesByUserId(userId, maxTweets, this.auth);
+    return getTweetsAndRepliesByUserId(userId, maxTweets, this.auth)
   }
 
   /**
@@ -361,7 +361,7 @@ export class Scraper {
     tweets: AsyncIterable<Tweet>,
     query: TweetQuery,
   ): Promise<Tweet | null> {
-    return getTweetWhere(tweets, query);
+    return getTweetWhere(tweets, query)
   }
 
   /**
@@ -384,7 +384,7 @@ export class Scraper {
     tweets: AsyncIterable<Tweet>,
     query: TweetQuery,
   ): Promise<Tweet[]> {
-    return getTweetsWhere(tweets, query);
+    return getTweetsWhere(tweets, query)
   }
 
   /**
@@ -398,7 +398,7 @@ export class Scraper {
     includeRetweets = false,
     max = 200,
   ): Promise<Tweet | null | void> {
-    return getLatestTweet(user, includeRetweets, max, this.auth);
+    return getLatestTweet(user, includeRetweets, max, this.auth)
   }
 
   /**
@@ -408,9 +408,9 @@ export class Scraper {
    */
   public getTweet(id: string): Promise<Tweet | null> {
     if (this.auth instanceof TwitterUserAuth) {
-      return getTweet(id, this.auth);
+      return getTweet(id, this.auth)
     } else {
-      return getTweetAnonymous(id, this.auth);
+      return getTweetAnonymous(id, this.auth)
     }
   }
 
@@ -419,7 +419,7 @@ export class Scraper {
    * @returns `true` if the scraper has a guest token; otherwise `false`.
    */
   public hasGuestToken(): boolean {
-    return this.auth.hasToken() || this.authTrends.hasToken();
+    return this.auth.hasToken() || this.authTrends.hasToken()
   }
 
   /**
@@ -429,7 +429,7 @@ export class Scraper {
   public async isLoggedIn(): Promise<boolean> {
     return (
       (await this.auth.isLoggedIn()) && (await this.authTrends.isLoggedIn())
-    );
+    )
   }
 
   /**
@@ -447,21 +447,21 @@ export class Scraper {
     twoFactorSecret?: string,
   ): Promise<void> {
     // Swap in a real authorizer for all requests
-    const userAuth = new TwitterUserAuth(this.token, this.getAuthOptions());
-    await userAuth.login(username, password, email, twoFactorSecret);
-    this.auth = userAuth;
-    this.authTrends = userAuth;
+    const userAuth = new TwitterUserAuth(this.token, this.getAuthOptions())
+    await userAuth.login(username, password, email, twoFactorSecret)
+    this.auth = userAuth
+    this.authTrends = userAuth
   }
 
   /**
    * Log out of Twitter.
    */
   public async logout(): Promise<void> {
-    await this.auth.logout();
-    await this.authTrends.logout();
+    await this.auth.logout()
+    await this.authTrends.logout()
 
     // Swap in guest authorizers for all requests
-    this.useGuestAuth();
+    this.useGuestAuth()
   }
 
   /**
@@ -473,7 +473,7 @@ export class Scraper {
       .cookieJar()
       .getCookies(
         typeof document !== 'undefined' ? document.location.toString() : twUrl,
-      );
+      )
   }
 
   /**
@@ -481,21 +481,21 @@ export class Scraper {
    * @param cookies The cookies to set for the current session.
    */
   public async setCookies(cookies: (string | Cookie)[]): Promise<void> {
-    const userAuth = new TwitterUserAuth(this.token, this.getAuthOptions());
+    const userAuth = new TwitterUserAuth(this.token, this.getAuthOptions())
     for (const cookie of cookies) {
-      await userAuth.cookieJar().setCookie(cookie, twUrl);
+      await userAuth.cookieJar().setCookie(cookie, twUrl)
     }
 
-    this.auth = userAuth;
-    this.authTrends = userAuth;
+    this.auth = userAuth
+    this.authTrends = userAuth
   }
 
   /**
    * Clear all cookies for the current session.
    */
   public async clearCookies(): Promise<void> {
-    await this.auth.cookieJar().removeAllCookies();
-    await this.authTrends.cookieJar().removeAllCookies();
+    await this.auth.cookieJar().removeAllCookies()
+    await this.authTrends.cookieJar().removeAllCookies()
   }
 
   /**
@@ -508,8 +508,8 @@ export class Scraper {
   public withCookie(_cookie: string): Scraper {
     console.warn(
       'Warning: Scraper#withCookie is deprecated and will be removed in a later version. Use Scraper#login or Scraper#setCookies instead.',
-    );
-    return this;
+    )
+    return this
   }
 
   /**
@@ -522,8 +522,8 @@ export class Scraper {
   public withXCsrfToken(_token: string): Scraper {
     console.warn(
       'Warning: Scraper#withXCsrfToken is deprecated and will be removed in a later version.',
-    );
-    return this;
+    )
+    return this
   }
 
   private getAuthOptions(): Partial<TwitterAuthOptions> {
@@ -531,14 +531,14 @@ export class Scraper {
       fetch: this.options?.fetch,
       transform: this.options?.transform,
       rateLimitStrategy: this.options?.rateLimitStrategy,
-    };
+    }
   }
 
   private handleResponse<T>(res: RequestApiResult<T>): T {
     if (!res.success) {
-      throw res.err;
+      throw res.err
     }
 
-    return res.value;
+    return res.value
   }
 }

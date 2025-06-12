@@ -1,5 +1,5 @@
-import { ErrorRateLimitStrategy } from './rate-limit';
-import { Scraper } from './scraper';
+import { ErrorRateLimitStrategy } from './rate-limit'
+import { Scraper } from './scraper'
 
 test('scraper uses request transform when provided', async () => {
   const scraper = new Scraper({
@@ -7,12 +7,12 @@ test('scraper uses request transform when provided', async () => {
       // Should throw "TypeError: Only absolute URLs are supported"
       request: () => [''],
     },
-  });
+  })
 
   await expect(scraper.getLatestTweet('twitter')).rejects.toThrowError(
     TypeError,
-  );
-});
+  )
+})
 
 test('scraper uses response transform when provided', async () => {
   const scraper = new Scraper({
@@ -21,18 +21,18 @@ test('scraper uses response transform when provided', async () => {
         new Proxy(response, {
           get(target, p, receiver) {
             if (p === 'status') {
-              return 400;
+              return 400
             }
 
             if (p === 'ok') {
-              return false;
+              return false
             }
 
-            return Reflect.get(target, p, receiver);
+            return Reflect.get(target, p, receiver)
           },
         }),
     },
-  });
+  })
 
-  await expect(scraper.getLatestTweet('twitter')).rejects.toThrowError();
-});
+  await expect(scraper.getLatestTweet('twitter')).rejects.toThrowError()
+})

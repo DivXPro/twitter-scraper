@@ -1,11 +1,11 @@
-import { PlatformExtensions } from '../platform-interface';
-import { randomizeCiphers } from './randomize-ciphers';
+import { PlatformExtensions } from '../platform-interface'
+import { randomizeCiphers } from './randomize-ciphers'
 
 class NodePlatform implements PlatformExtensions {
   randomizeCiphers(): Promise<void> {
-    randomizeCiphers();
-    return Promise.resolve();
+    randomizeCiphers()
+    return Promise.resolve()
   }
 }
 
-export const platform = new NodePlatform();
+export const platform = new NodePlatform()

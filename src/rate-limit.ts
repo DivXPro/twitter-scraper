@@ -1,8 +1,8 @@
-import { FetchParameters } from './api-types';
-import { ApiError } from './errors';
-import debug from 'debug';
+import { FetchParameters } from './api-types'
+import { ApiError } from './errors'
+import debug from 'debug'
 
-const log = debug('twitter-scraper:rate-limit');
+const log = debug('twitter-scraper:rate-limit')
 
 /**
  * Information about a rate-limiting event. Both the request and response
@@ -10,9 +10,9 @@ const log = debug('twitter-scraper:rate-limit');
  */
 export interface RateLimitEvent {
   /** The complete arguments that were passed to the fetch function. */
-  fetchParameters: FetchParameters;
+  fetchParameters: FetchParameters
   /** The failing HTTP response. */
-  response: Response;
+  response: Response
 }
 
 /**
@@ -42,7 +42,7 @@ export interface RateLimitStrategy {
    * Called when the scraper is rate limited.
    * @param event The event information, including the request and response info.
    */
-  onRateLimit(event: RateLimitEvent): Promise<void>;
+  onRateLimit(event: RateLimitEvent): Promise<void>
 }
 
 /**
@@ -57,20 +57,20 @@ export class WaitingRateLimitStrategy implements RateLimitStrategy {
       - x-rate-limit-reset: UNIX timestamp when the current rate limit will be reset.
       - x-rate-limit-remaining: Number of requests remaining in current time period?
       */
-    const xRateLimitLimit = res.headers.get('x-rate-limit-limit');
-    const xRateLimitRemaining = res.headers.get('x-rate-limit-remaining');
-    const xRateLimitReset = res.headers.get('x-rate-limit-reset');
+    const xRateLimitLimit = res.headers.get('x-rate-limit-limit')
+    const xRateLimitRemaining = res.headers.get('x-rate-limit-remaining')
+    const xRateLimitReset = res.headers.get('x-rate-limit-reset')
 
     log(
       `Rate limit event: limit=${xRateLimitLimit}, remaining=${xRateLimitRemaining}, reset=${xRateLimitReset}`,
-    );
+    )
 
     if (xRateLimitRemaining == '0' && xRateLimitReset) {
-      const currentTime = new Date().valueOf() / 1000;
-      const timeDeltaMs = 1000 * (parseInt(xRateLimitReset) - currentTime);
+      const currentTime = new Date().valueOf() / 1000
+      const timeDeltaMs = 1000 * (parseInt(xRateLimitReset) - currentTime)
 
       // I have seen this block for 800s (~13 *minutes*)
-      await new Promise((resolve) => setTimeout(resolve, timeDeltaMs));
+      await new Promise((resolve) => setTimeout(resolve, timeDeltaMs))
     }
   }
 }
@@ -80,6 +80,6 @@ export class WaitingRateLimitStrategy implements RateLimitStrategy {
  */
 export class ErrorRateLimitStrategy implements RateLimitStrategy {
   async onRateLimit({ response: res }: RateLimitEvent): Promise<void> {
-    throw await ApiError.fromResponse(res);
+    throw await ApiError.fromResponse(res)
   }
 }

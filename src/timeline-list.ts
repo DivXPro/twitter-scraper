@@ -1,6 +1,6 @@
-import { QueryTweetsResponse } from './timeline-v1';
-import { parseAndPush, TimelineEntryRaw } from './timeline-v2';
-import { Tweet } from './tweets';
+import { QueryTweetsResponse } from './timeline-v1'
+import { parseAndPush, TimelineEntryRaw } from './timeline-v2'
+import { Tweet } from './tweets'
 
 export interface ListTimeline {
   data?: {
@@ -8,49 +8,49 @@ export interface ListTimeline {
       tweets_timeline?: {
         timeline?: {
           instructions?: {
-            entries?: TimelineEntryRaw[];
-            entry?: TimelineEntryRaw;
-            type?: string;
-          }[];
-        };
-      };
-    };
-  };
+            entries?: TimelineEntryRaw[]
+            entry?: TimelineEntryRaw
+            type?: string
+          }[]
+        }
+      }
+    }
+  }
 }
 
 export function parseListTimelineTweets(
   timeline: ListTimeline,
 ): QueryTweetsResponse {
-  let bottomCursor: string | undefined;
-  let topCursor: string | undefined;
-  const tweets: Tweet[] = [];
+  let bottomCursor: string | undefined
+  let topCursor: string | undefined
+  const tweets: Tweet[] = []
   const instructions =
-    timeline.data?.list?.tweets_timeline?.timeline?.instructions ?? [];
+    timeline.data?.list?.tweets_timeline?.timeline?.instructions ?? []
   for (const instruction of instructions) {
-    const entries = instruction.entries ?? [];
+    const entries = instruction.entries ?? []
 
     for (const entry of entries) {
-      const entryContent = entry.content;
-      if (!entryContent) continue;
+      const entryContent = entry.content
+      if (!entryContent) continue
 
       if (entryContent.cursorType === 'Bottom') {
-        bottomCursor = entryContent.value;
-        continue;
+        bottomCursor = entryContent.value
+        continue
       } else if (entryContent.cursorType === 'Top') {
-        topCursor = entryContent.value;
-        continue;
+        topCursor = entryContent.value
+        continue
       }
 
-      const idStr = entry.entryId;
+      const idStr = entry.entryId
       if (
         !idStr.startsWith('tweet') &&
         !idStr.startsWith('list-conversation')
       ) {
-        continue;
+        continue
       }
 
       if (entryContent.itemContent) {
-        parseAndPush(tweets, entryContent.itemContent, idStr);
+        parseAndPush(tweets, entryContent.itemContent, idStr)
       } else if (entryContent.items) {
         for (const contentItem of entryContent.items) {
           if (
@@ -62,12 +62,12 @@ export function parseListTimelineTweets(
               tweets,
               contentItem.item.itemContent,
               contentItem.entryId.split('tweet-')[1],
-            );
+            )
           }
         }
       }
     }
   }
 
-  return { tweets, next: bottomCursor, previous: topCursor };
+  return { tweets, next: bottomCursor, previous: topCursor }
 }

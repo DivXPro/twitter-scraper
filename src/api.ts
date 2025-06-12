@@ -1,12 +1,12 @@
-import { FetchParameters } from './api-types';
-import { TwitterAuth } from './auth';
-import { ApiError } from './errors';
-import { Platform, PlatformExtensions } from './platform';
-import { updateCookieJar } from './requests';
-import { Headers } from 'headers-polyfill';
-import debug from 'debug';
+import { FetchParameters } from './api-types'
+import { TwitterAuth } from './auth'
+import { ApiError } from './errors'
+import { Platform, PlatformExtensions } from './platform'
+import { updateCookieJar } from './requests'
+import { Headers } from 'headers-polyfill'
+import debug from 'debug'
 
-const log = debug('twitter-scraper:api');
+const log = debug('twitter-scraper:api')
 
 export interface FetchTransformOptions {
   /**
@@ -18,7 +18,7 @@ export interface FetchTransformOptions {
    */
   request: (
     ...args: FetchParameters
-  ) => FetchParameters | Promise<FetchParameters>;
+  ) => FetchParameters | Promise<FetchParameters>
 
   /**
    * Transforms the response after a request completes. This executes immediately after the request
@@ -26,15 +26,15 @@ export interface FetchTransformOptions {
    * @param response The response object.
    * @returns The transformed response object.
    */
-  response: (response: Response) => Response | Promise<Response>;
+  response: (response: Response) => Response | Promise<Response>
 }
 
 export const bearerToken =
-  'AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF';
+  'AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF'
 
 export async function jitter(maxMs: number): Promise<void> {
-  const jitter = Math.random() * maxMs;
-  await new Promise((resolve) => setTimeout(resolve, jitter));
+  const jitter = Math.random() * maxMs
+  await new Promise((resolve) => setTimeout(resolve, jitter))
 }
 
 /**
@@ -42,7 +42,7 @@ export async function jitter(maxMs: number): Promise<void> {
  */
 export type RequestApiResult<T> =
   | { success: true; value: T }
-  | { success: false; err: Error };
+  | { success: false; err: Error }
 
 /**
  * Used internally to send HTTP requests to the Twitter API.
@@ -57,13 +57,13 @@ export async function requestApi<T>(
   method: 'GET' | 'POST' = 'GET',
   platform: PlatformExtensions = new Platform(),
 ): Promise<RequestApiResult<T>> {
-  log(`Making ${method} request to ${url}`);
+  log(`Making ${method} request to ${url}`)
 
-  const headers = new Headers();
-  await auth.installTo(headers, url);
-  await platform.randomizeCiphers();
+  const headers = new Headers()
+  await auth.installTo(headers, url)
+  await platform.randomizeCiphers()
 
-  let res: Response;
+  let res: Response
   do {
     const fetchParameters: FetchParameters = [
       url,
@@ -72,45 +72,45 @@ export async function requestApi<T>(
         headers,
         credentials: 'include',
       },
-    ];
+    ]
 
     try {
-      res = await auth.fetch(...fetchParameters);
+      res = await auth.fetch(...fetchParameters)
     } catch (err) {
       if (!(err instanceof Error)) {
-        throw err;
+        throw err
       }
 
       return {
         success: false,
         err: new Error('Failed to perform request.'),
-      };
+      }
     }
 
-    await updateCookieJar(auth.cookieJar(), res.headers);
+    await updateCookieJar(auth.cookieJar(), res.headers)
 
     if (res.status === 429) {
-      log('Rate limit hit, waiting for retry...');
+      log('Rate limit hit, waiting for retry...')
       await auth.onRateLimit({
         fetchParameters: fetchParameters,
         response: res,
-      });
+      })
     }
-  } while (res.status === 429);
+  } while (res.status === 429)
 
   if (!res.ok) {
     return {
       success: false,
       err: await ApiError.fromResponse(res),
-    };
+    }
   }
 
-  const value: T = await res.json();
+  const value: T = await res.json()
   if (res.headers.get('x-rate-limit-incoming') == '0') {
-    auth.deleteToken();
-    return { success: true, value };
+    auth.deleteToken()
+    return { success: true, value }
   } else {
-    return { success: true, value };
+    return { success: true, value }
   }
 }
 
@@ -146,46 +146,46 @@ export function addApiFeatures(o: object) {
     blue_business_profile_image_shape_enabled: false,
     unified_cards_ad_metadata_container_dynamic_card_content_query_enabled:
       false,
-  };
+  }
 }
 
 export function addApiParams(
   params: URLSearchParams,
   includeTweetReplies: boolean,
 ): URLSearchParams {
-  params.set('include_profile_interstitial_type', '1');
-  params.set('include_blocking', '1');
-  params.set('include_blocked_by', '1');
-  params.set('include_followed_by', '1');
-  params.set('include_want_retweets', '1');
-  params.set('include_mute_edge', '1');
-  params.set('include_can_dm', '1');
-  params.set('include_can_media_tag', '1');
-  params.set('include_ext_has_nft_avatar', '1');
-  params.set('include_ext_is_blue_verified', '1');
-  params.set('include_ext_verified_type', '1');
-  params.set('skip_status', '1');
-  params.set('cards_platform', 'Web-12');
-  params.set('include_cards', '1');
-  params.set('include_ext_alt_text', 'true');
-  params.set('include_ext_limited_action_results', 'false');
-  params.set('include_quote_count', 'true');
-  params.set('include_reply_count', '1');
-  params.set('tweet_mode', 'extended');
-  params.set('include_ext_collab_control', 'true');
-  params.set('include_ext_views', 'true');
-  params.set('include_entities', 'true');
-  params.set('include_user_entities', 'true');
-  params.set('include_ext_media_color', 'true');
-  params.set('include_ext_media_availability', 'true');
-  params.set('include_ext_sensitive_media_warning', 'true');
-  params.set('include_ext_trusted_friends_metadata', 'true');
-  params.set('send_error_codes', 'true');
-  params.set('simple_quoted_tweet', 'true');
-  params.set('include_tweet_replies', `${includeTweetReplies}`);
+  params.set('include_profile_interstitial_type', '1')
+  params.set('include_blocking', '1')
+  params.set('include_blocked_by', '1')
+  params.set('include_followed_by', '1')
+  params.set('include_want_retweets', '1')
+  params.set('include_mute_edge', '1')
+  params.set('include_can_dm', '1')
+  params.set('include_can_media_tag', '1')
+  params.set('include_ext_has_nft_avatar', '1')
+  params.set('include_ext_is_blue_verified', '1')
+  params.set('include_ext_verified_type', '1')
+  params.set('skip_status', '1')
+  params.set('cards_platform', 'Web-12')
+  params.set('include_cards', '1')
+  params.set('include_ext_alt_text', 'true')
+  params.set('include_ext_limited_action_results', 'false')
+  params.set('include_quote_count', 'true')
+  params.set('include_reply_count', '1')
+  params.set('tweet_mode', 'extended')
+  params.set('include_ext_collab_control', 'true')
+  params.set('include_ext_views', 'true')
+  params.set('include_entities', 'true')
+  params.set('include_user_entities', 'true')
+  params.set('include_ext_media_color', 'true')
+  params.set('include_ext_media_availability', 'true')
+  params.set('include_ext_sensitive_media_warning', 'true')
+  params.set('include_ext_trusted_friends_metadata', 'true')
+  params.set('send_error_codes', 'true')
+  params.set('simple_quoted_tweet', 'true')
+  params.set('include_tweet_replies', `${includeTweetReplies}`)
   params.set(
     'ext',
     'mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,birdwatchPivot,enrichments,superFollowMetadata,unmentionInfo,editControl,collab_control,vibe',
-  );
-  return params;
+  )
+  return params
 }

@@ -1,6 +1,6 @@
-import { getScraper } from './test-utils';
-import { Mention, Tweet } from './tweets';
-import { QueryTweetsResponse } from './timeline-v1';
+import { getScraper } from './test-utils'
+import { Mention, Tweet } from './tweets'
+import { QueryTweetsResponse } from './timeline-v1'
 
 test('scraper can get tweet', async () => {
   const expected: Tweet = {
@@ -29,151 +29,151 @@ test('scraper can get tweet', async () => {
     isRetweet: false,
     isPin: false,
     sensitiveContent: false,
-  };
+  }
 
-  const scraper = await getScraper();
-  const actual = await scraper.getTweet('1585338303800578049');
-  delete actual?.__raw_UNSTABLE;
-  delete actual?.likes;
-  delete actual?.replies;
-  delete actual?.retweets;
-  delete actual?.views;
-  delete actual?.bookmarkCount;
-  expect(actual).toEqual(expected);
-});
+  const scraper = await getScraper()
+  const actual = await scraper.getTweet('1585338303800578049')
+  delete actual?.__raw_UNSTABLE
+  delete actual?.likes
+  delete actual?.replies
+  delete actual?.retweets
+  delete actual?.views
+  delete actual?.bookmarkCount
+  expect(actual).toEqual(expected)
+})
 
 test('scraper can get tweets without logging in', async () => {
-  const scraper = await getScraper({ authMethod: 'anonymous' });
+  const scraper = await getScraper({ authMethod: 'anonymous' })
 
-  let counter = 0;
+  let counter = 0
   for await (const tweet of scraper.getTweets('elonmusk', 10)) {
     if (tweet) {
-      counter++;
+      counter++
     }
   }
 
-  expect(counter).toBeGreaterThanOrEqual(1);
-});
+  expect(counter).toBeGreaterThanOrEqual(1)
+})
 
 test('scraper can get tweets by user', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  let counter = 0;
+  let counter = 0
   for await (const tweet of scraper.getTweets('GeminiApp', 10)) {
     if (tweet) {
-      counter++;
+      counter++
     }
   }
 
-  expect(counter).toBeGreaterThanOrEqual(1);
-});
+  expect(counter).toBeGreaterThanOrEqual(1)
+})
 
 test('scraper can get tweets by user ID', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  let counter = 0;
+  let counter = 0
   for await (const tweet of scraper.getTweetsByUserId(
     '1016333328083910656',
     10,
   )) {
     if (tweet) {
-      counter++;
+      counter++
     }
   }
 
-  expect(counter).toBeGreaterThanOrEqual(1);
-});
+  expect(counter).toBeGreaterThanOrEqual(1)
+})
 
 test('scraper can get tweets and replies by user', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  let counter = 0;
+  let counter = 0
   for await (const tweet of scraper.getTweetsAndReplies('GeminiApp', 10)) {
     if (tweet) {
-      counter++;
+      counter++
     }
   }
 
-  expect(counter).toBeGreaterThanOrEqual(1);
-});
+  expect(counter).toBeGreaterThanOrEqual(1)
+})
 
 test('scraper can get tweets and replies by user ID', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  let counter = 0;
+  let counter = 0
   for await (const tweet of scraper.getTweetsAndRepliesByUserId(
     '1016333328083910656',
     10,
   )) {
     if (tweet) {
-      counter++;
+      counter++
     }
   }
 
-  expect(counter).toBeGreaterThanOrEqual(1);
-});
+  expect(counter).toBeGreaterThanOrEqual(1)
+})
 
 test('scraper can get tweets from list', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  let cursor: string | undefined = undefined;
-  const maxTweets = 30;
-  let nTweets = 0;
+  let cursor: string | undefined = undefined
+  const maxTweets = 30
+  let nTweets = 0
   while (nTweets < maxTweets) {
     const res: QueryTweetsResponse = await scraper.fetchListTweets(
       '1736495155002106192',
       maxTweets,
       cursor,
-    );
+    )
 
-    expect(res.next).toBeTruthy();
+    expect(res.next).toBeTruthy()
 
-    nTweets += res.tweets.length;
-    cursor = res.next;
+    nTweets += res.tweets.length
+    cursor = res.next
   }
-});
+})
 
 test('scraper can get first tweet matching query', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  const timeline = scraper.getTweets('elonmusk');
-  const latestQuote = await scraper.getTweetWhere(timeline, { isQuoted: true });
+  const timeline = scraper.getTweets('elonmusk')
+  const latestQuote = await scraper.getTweetWhere(timeline, { isQuoted: true })
 
-  expect(latestQuote?.isQuoted).toBeTruthy();
-});
+  expect(latestQuote?.isQuoted).toBeTruthy()
+})
 
 test('scraper can get all tweets matching query', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
   // Sample size of 20 should be enough without taking long.
-  const timeline = scraper.getTweets('elonmusk', 20);
+  const timeline = scraper.getTweets('elonmusk', 20)
   const retweets = await scraper.getTweetsWhere(
     timeline,
     (tweet) => tweet.isRetweet === true,
-  );
+  )
 
-  expect(retweets).toBeTruthy();
+  expect(retweets).toBeTruthy()
 
   for (const tweet of retweets) {
-    expect(tweet.isRetweet).toBe(true);
+    expect(tweet.isRetweet).toBe(true)
   }
-}, 20000);
+}, 20000)
 
 test('scraper can get latest tweet', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
   // OLD APPROACH (without retweet filtering)
-  const tweets = scraper.getTweets('elonmusk', 1);
-  const expected = (await tweets.next()).value;
+  const tweets = scraper.getTweets('elonmusk', 1)
+  const expected = (await tweets.next()).value
 
   // NEW APPROACH
   const latest = (await scraper.getLatestTweet(
     'elonmusk',
     expected?.isRetweet || false,
-  )) as Tweet;
+  )) as Tweet
 
-  expect(latest?.permanentUrl).toEqual(expected?.permanentUrl);
-}, 30000);
+  expect(latest?.permanentUrl).toEqual(expected?.permanentUrl)
+}, 30000)
 
 test('scraper can get user mentions in tweets', async () => {
   const expected: Mention[] = [
@@ -182,12 +182,12 @@ test('scraper can get user mentions in tweets', async () => {
       username: 'davidmcraney',
       name: 'David McRaney',
     },
-  ];
+  ]
 
-  const scraper = await getScraper();
-  const tweet = await scraper.getTweet('1554522888904101890');
-  expect(tweet?.mentions).toEqual(expected);
-});
+  const scraper = await getScraper()
+  const tweet = await scraper.getTweet('1554522888904101890')
+  expect(tweet?.mentions).toEqual(expected)
+})
 
 test('scraper can get tweet quotes without logging in', async () => {
   const expected: Tweet = {
@@ -220,19 +220,19 @@ test('scraper can get tweet quotes without logging in', async () => {
     isRetweet: false,
     isPin: false,
     sensitiveContent: false,
-  };
+  }
 
-  const scraper = await getScraper({ authMethod: 'anonymous' });
-  const quote = await scraper.getTweet('1237110897597976576');
-  expect(quote?.isQuoted).toBeTruthy();
-  delete quote?.quotedStatus?.__raw_UNSTABLE;
-  delete quote?.quotedStatus?.likes;
-  delete quote?.quotedStatus?.replies;
-  delete quote?.quotedStatus?.retweets;
-  delete quote?.quotedStatus?.views;
-  delete quote?.quotedStatus?.bookmarkCount;
-  expect(quote?.quotedStatus).toEqual(expected);
-});
+  const scraper = await getScraper({ authMethod: 'anonymous' })
+  const quote = await scraper.getTweet('1237110897597976576')
+  expect(quote?.isQuoted).toBeTruthy()
+  delete quote?.quotedStatus?.__raw_UNSTABLE
+  delete quote?.quotedStatus?.likes
+  delete quote?.quotedStatus?.replies
+  delete quote?.quotedStatus?.retweets
+  delete quote?.quotedStatus?.views
+  delete quote?.quotedStatus?.bookmarkCount
+  expect(quote?.quotedStatus).toEqual(expected)
+})
 
 test('scraper can get tweet quotes and replies', async () => {
   const expected: Tweet = {
@@ -265,32 +265,32 @@ test('scraper can get tweet quotes and replies', async () => {
     isRetweet: false,
     isPin: false,
     sensitiveContent: false,
-  };
-
-  const scraper = await getScraper();
-  const quote = await scraper.getTweet('1237110897597976576');
-  expect(quote?.isQuoted).toBeTruthy();
-  delete quote?.quotedStatus?.__raw_UNSTABLE;
-  delete quote?.quotedStatus?.likes;
-  delete quote?.quotedStatus?.replies;
-  delete quote?.quotedStatus?.retweets;
-  delete quote?.quotedStatus?.views;
-  delete quote?.quotedStatus?.bookmarkCount;
-  expect(quote?.quotedStatus).toEqual(expected);
-
-  const reply = await scraper.getTweet('1237111868445134850');
-  expect(reply?.isReply).toBeTruthy();
-  if (reply != null) {
-    reply.isReply = false;
   }
-  delete reply?.inReplyToStatus?.__raw_UNSTABLE;
-  delete reply?.inReplyToStatus?.likes;
-  delete reply?.inReplyToStatus?.replies;
-  delete reply?.inReplyToStatus?.retweets;
-  delete reply?.inReplyToStatus?.views;
-  delete reply?.inReplyToStatus?.bookmarkCount;
-  expect(reply?.inReplyToStatus).toEqual(expected);
-});
+
+  const scraper = await getScraper()
+  const quote = await scraper.getTweet('1237110897597976576')
+  expect(quote?.isQuoted).toBeTruthy()
+  delete quote?.quotedStatus?.__raw_UNSTABLE
+  delete quote?.quotedStatus?.likes
+  delete quote?.quotedStatus?.replies
+  delete quote?.quotedStatus?.retweets
+  delete quote?.quotedStatus?.views
+  delete quote?.quotedStatus?.bookmarkCount
+  expect(quote?.quotedStatus).toEqual(expected)
+
+  const reply = await scraper.getTweet('1237111868445134850')
+  expect(reply?.isReply).toBeTruthy()
+  if (reply != null) {
+    reply.isReply = false
+  }
+  delete reply?.inReplyToStatus?.__raw_UNSTABLE
+  delete reply?.inReplyToStatus?.likes
+  delete reply?.inReplyToStatus?.replies
+  delete reply?.inReplyToStatus?.retweets
+  delete reply?.inReplyToStatus?.views
+  delete reply?.inReplyToStatus?.bookmarkCount
+  expect(reply?.inReplyToStatus).toEqual(expected)
+})
 
 test('scraper can get retweet', async () => {
   const expected: Tweet = {
@@ -324,19 +324,19 @@ test('scraper can get retweet', async () => {
     isRetweet: false,
     isPin: false,
     sensitiveContent: false,
-  };
+  }
 
-  const scraper = await getScraper();
-  const retweet = await scraper.getTweet('1776285549566808397');
-  expect(retweet?.isRetweet).toBeTruthy();
-  delete retweet?.retweetedStatus?.__raw_UNSTABLE;
-  delete retweet?.retweetedStatus?.likes;
-  delete retweet?.retweetedStatus?.replies;
-  delete retweet?.retweetedStatus?.retweets;
-  delete retweet?.retweetedStatus?.views;
-  delete retweet?.retweetedStatus?.bookmarkCount;
-  expect(retweet?.retweetedStatus).toEqual(expected);
-});
+  const scraper = await getScraper()
+  const retweet = await scraper.getTweet('1776285549566808397')
+  expect(retweet?.isRetweet).toBeTruthy()
+  delete retweet?.retweetedStatus?.__raw_UNSTABLE
+  delete retweet?.retweetedStatus?.likes
+  delete retweet?.retweetedStatus?.replies
+  delete retweet?.retweetedStatus?.retweets
+  delete retweet?.retweetedStatus?.views
+  delete retweet?.retweetedStatus?.bookmarkCount
+  expect(retweet?.retweetedStatus).toEqual(expected)
+})
 
 test('scraper can get tweet views', async () => {
   const expected: Tweet = {
@@ -363,33 +363,33 @@ test('scraper can get tweet views', async () => {
     isRetweet: false,
     isPin: false,
     sensitiveContent: false,
-  };
+  }
 
-  const scraper = await getScraper();
-  const actual = await scraper.getTweet('1606055187348688896');
-  expect(actual?.views).toBeTruthy();
-  delete actual?.__raw_UNSTABLE;
-  delete actual?.likes;
-  delete actual?.replies;
-  delete actual?.retweets;
-  delete actual?.views;
-  delete actual?.bookmarkCount;
-  expect(actual).toEqual(expected);
-});
+  const scraper = await getScraper()
+  const actual = await scraper.getTweet('1606055187348688896')
+  expect(actual?.views).toBeTruthy()
+  delete actual?.__raw_UNSTABLE
+  delete actual?.likes
+  delete actual?.replies
+  delete actual?.retweets
+  delete actual?.views
+  delete actual?.bookmarkCount
+  expect(actual).toEqual(expected)
+})
 
 test('scraper can get tweet thread', async () => {
-  const scraper = await getScraper();
-  const tweet = await scraper.getTweet('1665602315745673217');
-  expect(tweet).not.toBeNull();
-  expect(tweet?.isSelfThread).toBeTruthy();
-  expect(tweet?.thread.length).toStrictEqual(7);
-});
+  const scraper = await getScraper()
+  const tweet = await scraper.getTweet('1665602315745673217')
+  expect(tweet).not.toBeNull()
+  expect(tweet?.isSelfThread).toBeTruthy()
+  expect(tweet?.thread.length).toStrictEqual(7)
+})
 
 test('scraper can get liked tweets', async () => {
-  const scraper = await getScraper();
-  const liked = scraper.getLikedTweets('elonmusk', 10);
-  const tweet = await liked.next();
-  expect(tweet.value).not.toBeUndefined();
-  expect(tweet.done).toBeFalsy();
-  expect(tweet.value?.id).not.toBeUndefined();
-});
+  const scraper = await getScraper()
+  const liked = scraper.getLikedTweets('elonmusk', 10)
+  const tweet = await liked.next()
+  expect(tweet.value).not.toBeUndefined()
+  expect(tweet.done).toBeFalsy()
+  expect(tweet.value?.id).not.toBeUndefined()
+})

@@ -1,5 +1,5 @@
-import { Profile } from './profile';
-import { getScraper } from './test-utils';
+import { Profile } from './profile'
+import { getScraper } from './test-utils'
 
 test('scraper can get profile', async () => {
   const expected: Profile = {
@@ -18,26 +18,26 @@ test('scraper can get profile', async () => {
     userId: '106037940',
     username: 'nomadic_ua',
     website: 'https://nomadic.name',
-  };
+  }
 
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  const actual = await scraper.getProfile('nomadic_ua');
-  expect(actual.avatar).toEqual(expected.avatar);
-  expect(actual.banner).toEqual(expected.banner);
-  expect(actual.biography).toEqual(expected.biography);
-  expect(actual.isPrivate).toEqual(expected.isPrivate);
-  expect(actual.isVerified).toEqual(expected.isVerified);
-  expect(actual.isBlueVerified).toEqual(expected.isBlueVerified);
-  expect(actual.joined).toEqual(expected.joined);
-  expect(actual.location).toEqual(expected.location);
-  expect(actual.name).toEqual(expected.name);
-  expect(actual.pinnedTweetIds).toEqual(expected.pinnedTweetIds);
-  expect(actual.url).toEqual(expected.url);
-  expect(actual.userId).toEqual(expected.userId);
-  expect(actual.username).toEqual(expected.username);
-  expect(actual.website).toEqual(expected.website);
-});
+  const actual = await scraper.getProfile('nomadic_ua')
+  expect(actual.avatar).toEqual(expected.avatar)
+  expect(actual.banner).toEqual(expected.banner)
+  expect(actual.biography).toEqual(expected.biography)
+  expect(actual.isPrivate).toEqual(expected.isPrivate)
+  expect(actual.isVerified).toEqual(expected.isVerified)
+  expect(actual.isBlueVerified).toEqual(expected.isBlueVerified)
+  expect(actual.joined).toEqual(expected.joined)
+  expect(actual.location).toEqual(expected.location)
+  expect(actual.name).toEqual(expected.name)
+  expect(actual.pinnedTweetIds).toEqual(expected.pinnedTweetIds)
+  expect(actual.url).toEqual(expected.url)
+  expect(actual.userId).toEqual(expected.userId)
+  expect(actual.username).toEqual(expected.username)
+  expect(actual.website).toEqual(expected.website)
+})
 
 test('scraper can get partial private profile', async () => {
   const expected: Profile = {
@@ -56,38 +56,38 @@ test('scraper can get partial private profile', async () => {
     userId: '1221221876849995777',
     username: 'tomdumont',
     website: undefined,
-  };
+  }
 
-  const scraper = await getScraper();
+  const scraper = await getScraper()
 
-  const actual = await scraper.getProfile('tomdumont');
-  expect(actual.avatar).toEqual(expected.avatar);
-  expect(actual.banner).toEqual(expected.banner);
-  expect(actual.biography).toEqual(expected.biography);
-  expect(actual.isPrivate).toEqual(expected.isPrivate);
-  expect(actual.isVerified).toEqual(expected.isVerified);
-  expect(actual.joined).toEqual(expected.joined);
-  expect(actual.location).toEqual(expected.location);
-  expect(actual.name).toEqual(expected.name);
-  expect(actual.pinnedTweetIds).toEqual(expected.pinnedTweetIds);
-  expect(actual.url).toEqual(expected.url);
-  expect(actual.userId).toEqual(expected.userId);
-  expect(actual.username).toEqual(expected.username);
-  expect(actual.website).toEqual(expected.website);
-});
+  const actual = await scraper.getProfile('tomdumont')
+  expect(actual.avatar).toEqual(expected.avatar)
+  expect(actual.banner).toEqual(expected.banner)
+  expect(actual.biography).toEqual(expected.biography)
+  expect(actual.isPrivate).toEqual(expected.isPrivate)
+  expect(actual.isVerified).toEqual(expected.isVerified)
+  expect(actual.joined).toEqual(expected.joined)
+  expect(actual.location).toEqual(expected.location)
+  expect(actual.name).toEqual(expected.name)
+  expect(actual.pinnedTweetIds).toEqual(expected.pinnedTweetIds)
+  expect(actual.url).toEqual(expected.url)
+  expect(actual.userId).toEqual(expected.userId)
+  expect(actual.username).toEqual(expected.username)
+  expect(actual.website).toEqual(expected.website)
+})
 
 test('scraper cannot get suspended profile', async () => {
-  const scraper = await getScraper();
+  const scraper = await getScraper()
   // taken from https://en.wikipedia.org/wiki/Twitter_suspensions#List_of_notable_suspensions
-  expect(scraper.getProfile('RobertC20041800')).rejects.toThrow();
-});
+  expect(scraper.getProfile('RobertC20041800')).rejects.toThrow()
+})
 
 test('scraper cannot get not found profile', async () => {
-  const scraper = await getScraper();
-  expect(scraper.getProfile('sample3123131')).rejects.toThrow();
-});
+  const scraper = await getScraper()
+  expect(scraper.getProfile('sample3123131')).rejects.toThrow()
+})
 
 test('scraper can get profile by screen name', async () => {
-  const scraper = await getScraper();
-  await scraper.getProfile('GeminiApp');
-});
+  const scraper = await getScraper()
+  await scraper.getProfile('GeminiApp')
+})

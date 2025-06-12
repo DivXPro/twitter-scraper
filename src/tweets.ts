@@ -1,7 +1,7 @@
-import { addApiFeatures, requestApi } from './api';
-import { TwitterAuth } from './auth';
-import { getUserIdByScreenName } from './profile';
-import { LegacyTweetRaw, QueryTweetsResponse } from './timeline-v1';
+import { addApiFeatures, requestApi } from './api'
+import { TwitterAuth } from './auth'
+import { getUserIdByScreenName } from './profile'
+import { LegacyTweetRaw, QueryTweetsResponse } from './timeline-v1'
 import {
   parseTimelineTweetsV2,
   TimelineV2,
@@ -9,89 +9,90 @@ import {
   parseTimelineEntryItemContentRaw,
   ThreadedConversation,
   parseThreadedConversation,
-} from './timeline-v2';
-import { getTweetTimeline } from './timeline-async';
-import { apiRequestFactory } from './api-data';
-import { ListTimeline, parseListTimelineTweets } from './timeline-list';
-import { AuthenticationError } from './errors';
+  parseThreadedReplies,
+} from './timeline-v2'
+import { getTweetTimeline } from './timeline-async'
+import { apiRequestFactory } from './api-data'
+import { ListTimeline, parseListTimelineTweets } from './timeline-list'
+import { AuthenticationError } from './errors'
 
 export interface Mention {
-  id: string;
-  username?: string;
-  name?: string;
+  id: string
+  username?: string
+  name?: string
 }
 
 export interface Photo {
-  id: string;
-  url: string;
-  alt_text: string | undefined;
+  id: string
+  url: string
+  alt_text: string | undefined
 }
 
 export interface Video {
-  id: string;
-  preview: string;
-  url?: string;
+  id: string
+  preview: string
+  url?: string
 }
 
 export interface PlaceRaw {
-  id?: string;
-  place_type?: string;
-  name?: string;
-  full_name?: string;
-  country_code?: string;
-  country?: string;
+  id?: string
+  place_type?: string
+  name?: string
+  full_name?: string
+  country_code?: string
+  country?: string
   bounding_box?: {
-    type?: string;
-    coordinates?: number[][][];
-  };
+    type?: string
+    coordinates?: number[][][]
+  }
 }
 
 /**
  * A parsed Tweet object.
  */
 export interface Tweet {
-  __raw_UNSTABLE?: LegacyTweetRaw;
-  bookmarkCount?: number;
-  conversationId?: string;
-  hashtags: string[];
-  html?: string;
-  id?: string;
-  inReplyToStatus?: Tweet;
-  inReplyToStatusId?: string;
-  isEdited?: boolean;
-  versions?: string[];
-  isQuoted?: boolean;
-  isPin?: boolean;
-  isReply?: boolean;
-  isRetweet?: boolean;
-  isSelfThread?: boolean;
-  likes?: number;
-  name?: string;
-  mentions: Mention[];
-  permanentUrl?: string;
-  photos: Photo[];
-  place?: PlaceRaw;
-  quotedStatus?: Tweet;
-  quotedStatusId?: string;
-  replies?: number;
-  retweets?: number;
-  retweetedStatus?: Tweet;
-  retweetedStatusId?: string;
-  text?: string;
-  thread: Tweet[];
-  timeParsed?: Date;
-  timestamp?: number;
-  urls: string[];
-  userId?: string;
-  username?: string;
-  videos: Video[];
-  views?: number;
-  sensitiveContent?: boolean;
+  __raw_UNSTABLE?: LegacyTweetRaw
+  bookmarkCount?: number
+  conversationId?: string
+  hashtags: string[]
+  html?: string
+  id?: string
+  inReplyToStatus?: Tweet
+  inReplyToStatusId?: string
+  isEdited?: boolean
+  versions?: string[]
+  isQuoted?: boolean
+  isPin?: boolean
+  isReply?: boolean
+  isRetweet?: boolean
+  isSelfThread?: boolean
+  likes?: number
+  name?: string
+  mentions: Mention[]
+  permanentUrl?: string
+  photos: Photo[]
+  place?: PlaceRaw
+  quotedStatus?: Tweet
+  quotedStatusId?: string
+  replies?: number
+  retweets?: number
+  retweetedStatus?: Tweet
+  retweetedStatusId?: string
+  text?: string
+  thread: Tweet[]
+  timeParsed?: Date
+  timestamp?: number
+  urls: string[]
+  userId?: string
+  username?: string
+  videos: Video[]
+  views?: number
+  sensitiveContent?: boolean
 }
 
 export type TweetQuery =
   | Partial<Tweet>
-  | ((tweet: Tweet) => boolean | Promise<boolean>);
+  | ((tweet: Tweet) => boolean | Promise<boolean>)
 
 export const features = addApiFeatures({
   interactive_text_enabled: true,
@@ -100,7 +101,7 @@ export const features = addApiFeatures({
   tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled:
     false,
   vibe_api_enabled: false,
-});
+})
 
 export async function fetchTweets(
   userId: string,
@@ -109,28 +110,28 @@ export async function fetchTweets(
   auth: TwitterAuth,
 ): Promise<QueryTweetsResponse> {
   if (maxTweets > 200) {
-    maxTweets = 200;
+    maxTweets = 200
   }
 
-  const userTweetsRequest = apiRequestFactory.createUserTweetsRequest();
-  userTweetsRequest.variables.userId = userId;
-  userTweetsRequest.variables.count = maxTweets;
-  userTweetsRequest.variables.includePromotedContent = false; // true on the website
+  const userTweetsRequest = apiRequestFactory.createUserTweetsRequest()
+  userTweetsRequest.variables.userId = userId
+  userTweetsRequest.variables.count = maxTweets
+  userTweetsRequest.variables.includePromotedContent = false // true on the website
 
   if (cursor != null && cursor != '') {
-    userTweetsRequest.variables['cursor'] = cursor;
+    userTweetsRequest.variables['cursor'] = cursor
   }
 
   const res = await requestApi<TimelineV2>(
     userTweetsRequest.toRequestUrl(),
     auth,
-  );
+  )
 
   if (!res.success) {
-    throw res.err;
+    throw res.err
   }
 
-  return parseTimelineTweetsV2(res.value);
+  return parseTimelineTweetsV2(res.value)
 }
 
 export async function fetchTweetsAndReplies(
@@ -140,29 +141,29 @@ export async function fetchTweetsAndReplies(
   auth: TwitterAuth,
 ): Promise<QueryTweetsResponse> {
   if (maxTweets > 40) {
-    maxTweets = 40;
+    maxTweets = 40
   }
 
   const userTweetsRequest =
-    apiRequestFactory.createUserTweetsAndRepliesRequest();
-  userTweetsRequest.variables.userId = userId;
-  userTweetsRequest.variables.count = maxTweets;
-  userTweetsRequest.variables.includePromotedContent = false; // true on the website
+    apiRequestFactory.createUserTweetsAndRepliesRequest()
+  userTweetsRequest.variables.userId = userId
+  userTweetsRequest.variables.count = maxTweets
+  userTweetsRequest.variables.includePromotedContent = false // true on the website
 
   if (cursor != null && cursor != '') {
-    userTweetsRequest.variables['cursor'] = cursor;
+    userTweetsRequest.variables['cursor'] = cursor
   }
 
   const res = await requestApi<TimelineV2>(
     userTweetsRequest.toRequestUrl(),
     auth,
-  );
+  )
 
   if (!res.success) {
-    throw res.err;
+    throw res.err
   }
 
-  return parseTimelineTweetsV2(res.value);
+  return parseTimelineTweetsV2(res.value)
 }
 
 export async function fetchListTweets(
@@ -172,27 +173,27 @@ export async function fetchListTweets(
   auth: TwitterAuth,
 ): Promise<QueryTweetsResponse> {
   if (maxTweets > 200) {
-    maxTweets = 200;
+    maxTweets = 200
   }
 
-  const listTweetsRequest = apiRequestFactory.createListTweetsRequest();
-  listTweetsRequest.variables.listId = listId;
-  listTweetsRequest.variables.count = maxTweets;
+  const listTweetsRequest = apiRequestFactory.createListTweetsRequest()
+  listTweetsRequest.variables.listId = listId
+  listTweetsRequest.variables.count = maxTweets
 
   if (cursor != null && cursor != '') {
-    listTweetsRequest.variables['cursor'] = cursor;
+    listTweetsRequest.variables['cursor'] = cursor
   }
 
   const res = await requestApi<ListTimeline>(
     listTweetsRequest.toRequestUrl(),
     auth,
-  );
+  )
 
   if (!res.success) {
-    throw res.err;
+    throw res.err
   }
 
-  return parseListTimelineTweets(res.value);
+  return parseListTimelineTweets(res.value)
 }
 
 export function getTweets(
@@ -201,16 +202,16 @@ export function getTweets(
   auth: TwitterAuth,
 ): AsyncGenerator<Tweet, void> {
   return getTweetTimeline(user, maxTweets, async (q, mt, c) => {
-    const userIdRes = await getUserIdByScreenName(q, auth);
+    const userIdRes = await getUserIdByScreenName(q, auth)
 
     if (!userIdRes.success) {
-      throw userIdRes.err;
+      throw userIdRes.err
     }
 
-    const { value: userId } = userIdRes;
+    const { value: userId } = userIdRes
 
-    return fetchTweets(userId, mt, c, auth);
-  });
+    return fetchTweets(userId, mt, c, auth)
+  })
 }
 
 export function getTweetsByUserId(
@@ -219,8 +220,8 @@ export function getTweetsByUserId(
   auth: TwitterAuth,
 ): AsyncGenerator<Tweet, void> {
   return getTweetTimeline(userId, maxTweets, (q, mt, c) => {
-    return fetchTweets(q, mt, c, auth);
-  });
+    return fetchTweets(q, mt, c, auth)
+  })
 }
 
 export function getTweetsAndReplies(
@@ -229,16 +230,16 @@ export function getTweetsAndReplies(
   auth: TwitterAuth,
 ): AsyncGenerator<Tweet, void> {
   return getTweetTimeline(user, maxTweets, async (q, mt, c) => {
-    const userIdRes = await getUserIdByScreenName(q, auth);
+    const userIdRes = await getUserIdByScreenName(q, auth)
 
     if (!userIdRes.success) {
-      throw userIdRes.err;
+      throw userIdRes.err
     }
 
-    const { value: userId } = userIdRes;
+    const { value: userId } = userIdRes
 
-    return fetchTweetsAndReplies(userId, mt, c, auth);
-  });
+    return fetchTweetsAndReplies(userId, mt, c, auth)
+  })
 }
 
 export function getTweetsAndRepliesByUserId(
@@ -247,8 +248,8 @@ export function getTweetsAndRepliesByUserId(
   auth: TwitterAuth,
 ): AsyncGenerator<Tweet, void> {
   return getTweetTimeline(userId, maxTweets, (q, mt, c) => {
-    return fetchTweetsAndReplies(q, mt, c, auth);
-  });
+    return fetchTweetsAndReplies(q, mt, c, auth)
+  })
 }
 
 export async function fetchLikedTweets(
@@ -260,32 +261,32 @@ export async function fetchLikedTweets(
   if (!(await auth.isLoggedIn())) {
     throw new AuthenticationError(
       'Scraper is not logged-in for fetching liked tweets.',
-    );
+    )
   }
 
   if (maxTweets > 200) {
-    maxTweets = 200;
+    maxTweets = 200
   }
 
-  const userTweetsRequest = apiRequestFactory.createUserLikedTweetsRequest();
-  userTweetsRequest.variables.userId = userId;
-  userTweetsRequest.variables.count = maxTweets;
-  userTweetsRequest.variables.includePromotedContent = false; // true on the website
+  const userTweetsRequest = apiRequestFactory.createUserLikedTweetsRequest()
+  userTweetsRequest.variables.userId = userId
+  userTweetsRequest.variables.count = maxTweets
+  userTweetsRequest.variables.includePromotedContent = false // true on the website
 
   if (cursor != null && cursor != '') {
-    userTweetsRequest.variables['cursor'] = cursor;
+    userTweetsRequest.variables['cursor'] = cursor
   }
 
   const res = await requestApi<TimelineV2>(
     userTweetsRequest.toRequestUrl(),
     auth,
-  );
+  )
 
   if (!res.success) {
-    throw res.err;
+    throw res.err
   }
 
-  return parseTimelineTweetsV2(res.value);
+  return parseTimelineTweetsV2(res.value)
 }
 
 export function getLikedTweets(
@@ -294,59 +295,59 @@ export function getLikedTweets(
   auth: TwitterAuth,
 ): AsyncGenerator<Tweet, void> {
   return getTweetTimeline(user, maxTweets, async (q, mt, c) => {
-    const userIdRes = await getUserIdByScreenName(q, auth);
+    const userIdRes = await getUserIdByScreenName(q, auth)
 
     if (!userIdRes.success) {
-      throw userIdRes.err;
+      throw userIdRes.err
     }
 
-    const { value: userId } = userIdRes;
+    const { value: userId } = userIdRes
 
-    return fetchLikedTweets(userId, mt, c, auth);
-  });
+    return fetchLikedTweets(userId, mt, c, auth)
+  })
 }
 
 export async function getTweetWhere(
   tweets: AsyncIterable<Tweet>,
   query: TweetQuery,
 ): Promise<Tweet | null> {
-  const isCallback = typeof query === 'function';
+  const isCallback = typeof query === 'function'
 
   for await (const tweet of tweets) {
     const matches = isCallback
       ? await query(tweet)
-      : checkTweetMatches(tweet, query);
+      : checkTweetMatches(tweet, query)
 
     if (matches) {
-      return tweet;
+      return tweet
     }
   }
 
-  return null;
+  return null
 }
 
 export async function getTweetsWhere(
   tweets: AsyncIterable<Tweet>,
   query: TweetQuery,
 ): Promise<Tweet[]> {
-  const isCallback = typeof query === 'function';
-  const filtered = [];
+  const isCallback = typeof query === 'function'
+  const filtered = []
 
   for await (const tweet of tweets) {
-    const matches = isCallback ? query(tweet) : checkTweetMatches(tweet, query);
+    const matches = isCallback ? query(tweet) : checkTweetMatches(tweet, query)
 
-    if (!matches) continue;
-    filtered.push(tweet);
+    if (!matches) continue
+    filtered.push(tweet)
   }
 
-  return filtered;
+  return filtered
 }
 
 function checkTweetMatches(tweet: Tweet, options: Partial<Tweet>): boolean {
   return Object.keys(options).every((k) => {
-    const key = k as keyof Tweet;
-    return tweet[key] === options[key];
-  });
+    const key = k as keyof Tweet
+    return tweet[key] === options[key]
+  })
 }
 
 export async function getLatestTweet(
@@ -355,40 +356,64 @@ export async function getLatestTweet(
   max: number,
   auth: TwitterAuth,
 ): Promise<Tweet | null | void> {
-  const timeline = getTweets(user, max, auth);
+  const timeline = getTweets(user, max, auth)
 
   // No point looping if max is 1, just use first entry.
   return max === 1
     ? (await timeline.next()).value
-    : await getTweetWhere(timeline, { isRetweet: includeRetweets });
+    : await getTweetWhere(timeline, { isRetweet: includeRetweets })
 }
 
 export interface TweetResultByRestId {
-  data?: TimelineEntryItemContentRaw;
+  data?: TimelineEntryItemContentRaw
 }
 
 export async function getTweet(
   id: string,
   auth: TwitterAuth,
 ): Promise<Tweet | null> {
-  const tweetDetailRequest = apiRequestFactory.createTweetDetailRequest();
-  tweetDetailRequest.variables.focalTweetId = id;
+  const tweetDetailRequest = apiRequestFactory.createTweetDetailRequest()
+  tweetDetailRequest.variables.focalTweetId = id
 
   const res = await requestApi<ThreadedConversation>(
     tweetDetailRequest.toRequestUrl(),
     auth,
-  );
+  )
 
   if (!res.success) {
-    throw res.err;
+    throw res.err
   }
 
   if (!res.value) {
-    return null;
+    return null
   }
 
-  const tweets = parseThreadedConversation(res.value);
-  return tweets.find((tweet) => tweet.id === id) ?? null;
+  const tweets = parseThreadedConversation(res.value)
+  return tweets.find((tweet) => tweet.id === id) ?? null
+}
+
+export async function getTweetReplies(
+  id: string,
+  cursor: string | undefined,
+  auth: TwitterAuth,
+): Promise<QueryTweetsResponse> {
+  const tweetDetailRequest = apiRequestFactory.createTweetDetailRequest()
+  tweetDetailRequest.variables.focalTweetId = id
+
+  if (cursor != null && cursor != '') {
+    tweetDetailRequest.variables['cursor'] = cursor
+  }
+
+  const res = await requestApi<ThreadedConversation>(
+    tweetDetailRequest.toRequestUrl(),
+    auth,
+  )
+
+  if (!res.success) {
+    throw res.err
+  }
+
+  return parseThreadedReplies(res.value)
 }
 
 export async function getTweetAnonymous(
@@ -396,21 +421,21 @@ export async function getTweetAnonymous(
   auth: TwitterAuth,
 ): Promise<Tweet | null> {
   const tweetResultByRestIdRequest =
-    apiRequestFactory.createTweetResultByRestIdRequest();
-  tweetResultByRestIdRequest.variables.tweetId = id;
+    apiRequestFactory.createTweetResultByRestIdRequest()
+  tweetResultByRestIdRequest.variables.tweetId = id
 
   const res = await requestApi<TweetResultByRestId>(
     tweetResultByRestIdRequest.toRequestUrl(),
     auth,
-  );
+  )
 
   if (!res.success) {
-    throw res.err;
+    throw res.err
   }
 
   if (!res.value.data) {
-    return null;
+    return null
   }
 
-  return parseTimelineEntryItemContentRaw(res.value.data, id);
+  return parseTimelineEntryItemContentRaw(res.value.data, id)
 }

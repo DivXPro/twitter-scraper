@@ -6,11 +6,11 @@ export interface PlatformExtensions {
    * **References:**
    * - https://github.com/imputnet/cobalt/pull/574
    */
-  randomizeCiphers(): Promise<void>;
+  randomizeCiphers(): Promise<void>
 }
 
 export const genericPlatform = new (class implements PlatformExtensions {
   randomizeCiphers(): Promise<void> {
-    return Promise.resolve();
+    return Promise.resolve()
   }
-})();
+})()
