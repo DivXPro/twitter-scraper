@@ -392,7 +392,7 @@ export async function getTweet(
   return tweets.find((tweet) => tweet.id === id) ?? null
 }
 
-export async function getTweetReplies(
+export async function fetchTweetReplies(
   id: string,
   cursor: string | undefined,
   auth: TwitterAuth,

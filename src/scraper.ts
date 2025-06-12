@@ -33,6 +33,7 @@ import {
   getTweetsAndRepliesByUserId,
   getTweetsAndReplies,
   fetchLikedTweets,
+  fetchTweetReplies,
 } from './tweets'
 import fetch from 'cross-fetch'
 import { RateLimitStrategy } from './rate-limit'
@@ -412,6 +413,19 @@ export class Scraper {
     } else {
       return getTweetAnonymous(id, this.auth)
     }
+  }
+
+  /**
+   * Fetches the replies to a tweet.
+   * @param id The ID of the tweet to fetch replies to.
+   * @param cursor The cursor to use for pagination.
+   * @returns The {@link QueryTweetsResponse} object, or `null` if it couldn't be fetched.
+   */
+  public fetchTweetReplies(
+    id: string,
+    cursor: string | undefined,
+  ): Promise<QueryTweetsResponse | null> {
+    return fetchTweetReplies(id, cursor, this.auth)
   }
 
   /**
